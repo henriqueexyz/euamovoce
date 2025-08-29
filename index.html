@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eu amo a Aline 💖</title>
+  <style>
+    :root{
+      --bg1:#ff9a9e;
+      --bg2:#fecfef;
+      --card:#ffffffee;
+      --accent:#ff5c8a;
+      --text:#311b39;
+    }
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text)}
+    body{
+      background: linear-gradient(135deg,var(--bg1),var(--bg2));
+      display:flex;align-items:center;justify-content:center;padding:40px;
+      overflow:hidden;
+    }
+
+    .stage{
+      width:100%;max-width:1024px;background:var(--card);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.12);padding:28px;position:relative;z-index:2;
+      backdrop-filter: blur(6px);
+    }
+
+    header{display:flex;gap:18px;align-items:center}
+    .avatar{width:120px;height:120px;border-radius:18px;overflow:hidden;flex:0 0 120px;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    h1{margin:0;font-size:2.2rem}
+    p.lead{margin:6px 0 0 0;opacity:.9}
+
+    .gallery{display:flex;gap:12px;margin-top:18px}
+    .gallery img{width:calc((100% - 24px)/3);height:160px;object-fit:cover;border-radius:12px}
+
+    .cta{margin-top:18px;display:flex;gap:10px;align-items:center}
+    .btn{background:var(--accent);color:white;padding:10px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:600;box-shadow:0 6px 14px rgba(255,92,138,0.24)}
+    .hint{font-size:.9rem;opacity:.85}
+
+    /* hearts layer (full-screen, behind the stage) */
+    .hearts-layer{pointer-events:none;position:fixed;inset:0;z-index:1;overflow:hidden}
+
+    /* heart element */
+    .heart{
+      position:absolute;left:50%;top:-10vh;font-size:28px;opacity:0;transform-origin:center;
+      will-change:transform,opacity;
+      filter:drop-shadow(0 4px 8px rgba(0,0,0,0.12));
+    }
+
+    @keyframes fall{
+      0%{transform:translateY(-10vh) translateX(0) rotate(0deg);opacity:0}
+      10%{opacity:1}
+      100%{transform:translateY(110vh) translateX(var(--sway,0px)) rotate(var(--rot,0deg));opacity:0}
+    }
+
+    /* small responsive tweaks */
+    @media (max-width:640px){
+      .gallery img{height:110px}
+      h1{font-size:1.6rem}
+      .avatar{width:88px;height:88px;flex:0 0 88px}
+    }
+  </style>
+</head>
+<body>
+  <div class="hearts-layer" id="heartsLayer"></div>
+
+  <main class="stage" role="main">
+    <header>
+      <div class="avatar">
+        <!-- Substitua as imagens pelos arquivos reais em ./photos/ -->
+        <img src="photos/aline-avatar.jpg" alt="Aline" onerror="this.style.filter='grayscale(60%)'" />
+      </div>
+      <div>
+        <h1>Aline, eu te amo 💖</h1>
+        <p class="lead">Um site só pra dizer — de forma linda, boba e sincera — que você é tudo pra mim.</p>
+        <div class="cta">
+          <button class="btn" id="btnToggleRain">Parar chuva</button>
+          <div class="hint">Clique nas fotos para ampliar.</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="gallery" aria-label="Fotos da Aline">
+      <img src="photos/aline1.jpg" alt="Aline 1" onclick="openLightbox(this.src)" />
+      <img src="photos/aline2.jpg" alt="Aline 2" onclick="openLightbox(this.src)" />
+      <img src="photos/aline3.jpg" alt="Aline 3" onclick="openLightbox(this.src)" />
+    </section>
+
+    <p style="margin-top:18px;opacity:.9">Pequenas surpresas: corações que caem, fotos suas e uma mensagem que nunca acaba.</p>
+  </main>
+
+  <!-- Lightbox simples -->
+  <div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:9999">
+    <img id="lightboxImg" src="" alt="" style="max-width:90%;max-height:90%;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.4)" onclick="closeLightbox()" />
+  </div>
+
+  <script>
+    // Pequeno gerador de corações em 'chuva'
+    const layer = document.getElementById('heartsLayer');
+    let raining = true;
+    const btn = document.getElementById('btnToggleRain');
+
+    function rand(min,max){ return Math.random()*(max-min)+min }
+
+    function makeHeart(){
+      const el = document.createElement('div');
+      el.className = 'heart';
+      // Usamos emoji para simplicidade — pode substituir por SVG se desejar.
+      el.innerHTML = '💘';
+
+      // random horizontal position
+      const x = rand(2,98);
+      el.style.left = x + '%';
+
+      // random size
+      const size = Math.round(rand(18,56));
+      el.style.fontSize = size + 'px';
+
+      // random sway and rotation
+      const sway = Math.round(rand(-120,120)) + 'px';
+      const rot = Math.round(rand(-720,720)) + 'deg';
+      el.style.setProperty('--sway', sway);
+      el.style.setProperty('--rot', rot);
+
+      // random animation duration
+      const duration = rand(4.5,10.5).toFixed(2);
+      el.style.animation = `fall ${duration}s linear forwards`;
+
+      // slight horizontal offset using transform
+      el.style.transform = `translateY(-10vh) rotate(${rand(-30,30)}deg)`;
+
+      layer.appendChild(el);
+
+      // remove after animation
+      setTimeout(()=>{ el.remove() }, (parseFloat(duration)*1000) + 800);
+
+      // click to pop (tiny scale + fade)
+      el.addEventListener('click', ()=>{
+        el.style.transition = 'transform .25s ease, opacity .25s ease';
+        el.style.transform = 'scale(1.6) translateY(-10px)';
+        el.style.opacity = '0';
+        setTimeout(()=>el.remove(),300);
+      });
+    }
+
+    // spawner
+    let spawner = null;
+    function startRain(){
+      if(spawner) return;
+      spawner = setInterval(()=>{
+        // spawn 1-3 hearts at a time
+        const count = Math.random() < 0.2 ? Math.floor(rand(2,4)) : 1;
+        for(let i=0;i<count;i++) makeHeart();
+      }, 280);
+      btn.textContent = 'Parar chuva';
+    }
+    function stopRain(){
+      clearInterval(spawner); spawner = null; btn.textContent = 'Iniciar chuva';
+    }
+
+    // toggle
+    btn.addEventListener('click', ()=>{
+      raining = !raining;
+      if(raining) startRain(); else stopRain();
+    });
+
+    // lightbox funcs
+    function openLightbox(src){
+      const lb = document.getElementById('lightbox');
+      const img = document.getElementById('lightboxImg');
+      img.src = src; lb.style.display = 'flex';
+    }
+    function closeLightbox(){ document.getElementById('lightbox').style.display='none' }
+
+    // start
+    startRain();
+
+    // Accessibility: stop rain when tab not visible
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden) stopRain(); else if(raining) startRain();
+    });
+
+    // Expose helper functions (for dev/debug)
+    window.openLightbox = openLightbox;
+    window.closeLightbox = closeLightbox;
+  </script>
+</body>
+</html>
